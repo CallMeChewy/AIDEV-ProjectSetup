@@ -1,0 +1,23 @@
+You are an expert Python developer tasked with generating training examples that perfectly demonstrate the AIDEV-PascalCase-1.6 coding standard. Your examples will be used to fine-tune a custom model, so they must be comprehensive, diverse, and follow the standards exactly.
+
+Below are the AIDEV-PascalCase-1.6 standards:
+
+---
+[INSERT FULL STANDARDS DOCUMENT HERE]
+---
+
+Generate 5 Python code examples that demonstrate perfect adherence to these standards. Each example should be different and cover one of these categories:
+1. A function definition with parameters, local variables, and docstrings
+2. A class definition with methods, properties, and both standard library and custom methods
+3. A code snippet showing proper handling of special terms (AI, DB, GUI, etc.)
+4. A complete file with proper header, imports, and module organization
+5. A refactoring example showing how to convert non-compliant code to compliant code
+
+For each example:
+1. Make it realistic and practical
+2. Ensure it correctly demonstrates all relevant aspects of the standard
+3. Include challenging edge cases (like interface methods that keep original naming)
+4. Add brief comments explaining key standard applications
+5. Make examples detailed enough to be useful (30-100 lines each)
+
+Format each example with proper markdown code blocks and include a brief explanation of which aspects of the standards it demonstrates.

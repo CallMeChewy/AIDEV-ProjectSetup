@@ -1,0 +1,56 @@
+How to Test Manually
+Here's how you can manually test the AIDEV-ProjectSetup tool:
+
+Setup a New Project:
+bashCopypython -m Core.ProjectInitializer
+This will walk you through creating a new project. You'll need to provide:
+
+Project name (e.g., "AIDEV-TestProject")
+Project description
+GitHub account (if integrating with GitHub)
+Repository name (if integrating with GitHub)
+
+
+Verify the Project Structure:
+After creation, examine the generated project directory structure:
+ls -la /path/to/your/new/project
+You should see the standard directory structure with core folders (Docs, Core, Utils, etc.)
+
+Check Database Files:
+Verify that the database files were created correctly:
+ls -la /path/to/your/new/project/Directories
+You should see:
+ProjectName.db (project-specific database)
+A symbolic link to Himalaya.db
+
+Examine Database Content:
+You can use SQLite to examine the database content:
+sqlite3 /path/to/your/new/project/Directories/ProjectName.db
+
+Then use SQL commands to verify tables:
+sqlCopy.tables
+SELECT * FROM ProjectConfig;
+SELECT * FROM Documentation;
+SELECT * FROM ProjectState;
+
+Verify Template Files:
+Check that the template files were generated correctly:
+cat /path/to/your/new/project/README.md
+cat /path/to/your/new/project/LICENSE
+
+Test Git Integration:
+Verify that Git was initialized properly:
+cd /path/to/your/new/project
+git status
+git log
+
+You should see an initial commit with all project files.
+Verify GitHub Integration (if configured):
+If you provided GitHub credentials, check if the remote was set correctly:
+git remote -v
+
+You should see your GitHub repository URL.
+
+This manual testing approach allows you to verify all aspects of the 
+project setup process, including directory structure creation, 
+database initialization, file generation, and Git/GitHub integration.

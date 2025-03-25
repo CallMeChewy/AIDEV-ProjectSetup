@@ -1,0 +1,38 @@
+herb@herb:~/Projects/AIDEV-TestSetup$ ssh-keygen -t ed25519 -C HerbBowers@gmail.com
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/herb/.ssh/id_ed25519):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/herb/.ssh/id_ed25519
+Your public key has been saved in /home/herb/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:Dv2ssreqWpOF/bBeE8F+Hq9r49f0XPSrAc4egXpT1Zw HerbBowers@gmail.com
+The key's randomart image is:
++--[ED25519 256]--+
+|                 |
+|       .      o .|
+|        o    . E |
+|     o o .. .   .|
+|    . = S.o+   ..|
+|     o *.*+oo . o|
+|    + ..=o++.+ oo|
+|   . o..oo=.o o.o|
+|  ....+=o++= ..  |
++----[SHA256]-----+
+herb@herb:~/Projects/AIDEV-TestSetup$ eval "$(ssh-agent -s)"
+Agent pid 122772
+herb@herb:~/Projects/AIDEV-TestSetup$ ssh-add ~/.ssh/id_ed25519
+Identity added: /home/herb/.ssh/id_ed25519 (HerbBowers@gmail.com)
+herb@herb:~/Projects/AIDEV-TestSetup$ cat ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIChLJOpHUwugM/EL1NNbm5gCOymrr0kSwGNPNnVRb27 HerbBowers@gmail.com
+herb@herb:~/Projects/AIDEV-TestSetup$ cd /home/herb/Projects/AIDEV-TestSetup
+git remote set-url origin git@github.com:CallMeChewy/AIDEV-TestSetup.git
+herb@herb:~/Projects/AIDEV-TestSetup$ git push -u origin main
+The authenticity of host 'github.com (140.82.113.4)' can't be established.
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
+This key is not known by any other names.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
+branch 'main' set up to track 'origin/main'.
+Everything up-to-date
+herb@herb:~/Projects/AIDEV-TestSetup$

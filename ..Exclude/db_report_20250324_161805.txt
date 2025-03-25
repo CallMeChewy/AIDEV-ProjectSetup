@@ -1,0 +1,145 @@
+================================================================================
+DATABASE TEST REPORT
+================================================================================
+Generated: 2025-03-24T16:18:05.721445
+Number of databases: 2
+
+================================================================================
+DATABASE 1: /tmp/pytest-of-herb/pytest-3/test_full_workflow0/AIDEV-TestProject/Directories/AIDEV-TestProject.db
+--------------------------------------------------------------------------------
+Description: Project database after full workflow
+
+TABLE: schema_version
+----------------------------------------
+Row count: 1
+Columns: 3
+
+Schema:
+  - version (INTEGER) PRIMARY KEY
+  - applied_at (TEXT) NOT NULL
+  - description (TEXT) NOT NULL
+
+Sample data:
+  Row 1: (1, '2025-03-24T16:18:05.720317', 'Initial schema creation')
+
+TABLE: ProjectConfig
+----------------------------------------
+Row count: 3
+Columns: 6
+
+Schema:
+  - ConfigId (INTEGER) PRIMARY KEY
+  - ConfigKey (TEXT) NOT NULL
+  - ConfigValue (TEXT) NOT NULL
+  - ConfigType (TEXT) NOT NULL
+  - Description (TEXT)
+  - LastModified (TEXT) NOT NULL
+
+Sample data:
+  Row 1: (1, 'ProjectName', 'AIDEV-TestProject', 'STRING', 'Project name', '2025-03-24T16:18:05.720449')
+  Row 2: (2, 'ProjectDescription', 'Test project for DatabaseIntegration', 'STRING', 'Project description', '2025-03-24T16:18:05.720449')
+  Row 3: (3, 'GitHubRepo', 'TestAccount/TestRepo', 'STRING', 'GitHub repository', '2025-03-24T16:18:05.720449')
+
+TABLE: sqlite_sequence
+----------------------------------------
+Row count: 3
+Columns: 2
+
+Schema:
+  - name ()
+  - seq ()
+
+Sample data:
+  Row 1: ('ProjectConfig', 3)
+  Row 2: ('ProjectState', 1)
+  Row 3: ('Documentation', 1)
+
+TABLE: Documentation
+----------------------------------------
+Row count: 1
+Columns: 8
+
+Schema:
+  - DocId (INTEGER) PRIMARY KEY
+  - DocType (TEXT) NOT NULL
+  - Title (TEXT) NOT NULL
+  - Content (TEXT) NOT NULL
+  - Format (TEXT) NOT NULL
+  - Tags (TEXT)
+  - CreationDate (TEXT) NOT NULL
+  - LastModified (TEXT) NOT NULL
+
+Sample data:
+  Row 1: (1, 'Setup', 'Project Setup Documentation', '# AIDEV-TestProject\n\nProject setup completed on 2025-03-24 16:18:05.', 'Markdown', 'setup,documentation', '2025-03-24T16:18:05.720449', '2025-03-24T16:18:05.720449')
+
+TABLE: HelpContent
+----------------------------------------
+Row count: 0
+Columns: 7
+
+Schema:
+  - HelpId (INTEGER) PRIMARY KEY
+  - Topic (TEXT) NOT NULL
+  - Content (TEXT) NOT NULL
+  - Keywords (TEXT)
+  - RelatedTopics (TEXT)
+  - ContextTriggers (TEXT)
+  - LastModified (TEXT) NOT NULL
+
+Sample data:
+  No data
+
+TABLE: ProjectState
+----------------------------------------
+Row count: 1
+Columns: 6
+
+Schema:
+  - StateId (INTEGER) PRIMARY KEY
+  - StateName (TEXT) NOT NULL
+  - CurrentPhase (TEXT) NOT NULL
+  - StateData (TEXT) NOT NULL
+  - CreationDate (TEXT) NOT NULL
+  - LastModified (TEXT) NOT NULL
+
+Sample data:
+  Row 1: (1, 'Initial', 'Setup', '{}', '2025-03-24T16:18:05.720449', '2025-03-24T16:18:05.720449')
+
+TABLE: SubProjects
+----------------------------------------
+Row count: 0
+Columns: 5
+
+Schema:
+  - SubProjectId (INTEGER) PRIMARY KEY
+  - SubProjectName (TEXT) NOT NULL
+  - GitHubRepo (TEXT)
+  - Relationship (TEXT) NOT NULL
+  - Active (INTEGER) NOT NULL DEFAULT 1
+
+Sample data:
+  No data
+
+================================================================================
+DATABASE 2: /tmp/pytest-of-herb/pytest-3/test_full_workflow0/Himalaya.db
+--------------------------------------------------------------------------------
+Description: Himalaya database after full workflow
+
+TABLE: project
+----------------------------------------
+Row count: 1
+Columns: 8
+
+Schema:
+  - project_id (TEXT) PRIMARY KEY
+  - name (TEXT) NOT NULL
+  - description (TEXT) NOT NULL
+  - path (TEXT) NOT NULL
+  - created_at (TEXT) NOT NULL
+  - updated_at (TEXT) NOT NULL
+  - version (INTEGER) NOT NULL DEFAULT 1
+  - is_active (INTEGER) NOT NULL DEFAULT 1
+
+Sample data:
+  Row 1: ('project-4768169e', 'AIDEV-TestProject', 'Test project for DatabaseIntegration', '/tmp/pytest-of-herb/pytest-3/test_full_workflow0/AIDEV-TestProject', '2025-03-24T16:18:05.720698', '2025-03-24T16:18:05.720698', 1, 1)
+

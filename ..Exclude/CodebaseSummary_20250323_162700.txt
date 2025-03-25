@@ -1,0 +1,2149 @@
+This file is a comprehensive codebase snapshot for the OllamaModelEditor project, generated to facilitate analysis and development.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This document provides a consolidated view of the project's Python source code, 
+excluding any files specified in the .gitignore file. It serves as a reference 
+for developers, making it easier to understand the codebase structure and 
+functionality in a single document.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Multiple file entries, each consisting of:
+5. List of Program files
+6. List of Documents
+
+================================================================
+Directory Structure
+================================================================
+.
+├── ./AddThese
+├── ./AddTheseNow
+├── ./Core
+│   ├── ./Core/DatabaseIntegration.py
+│   ├── ./Core/GitHubManager.py
+│   └── ./Core/ProjectInitializer.py
+├── ./Docs
+│   ├── ./Docs/AIDEV-ProjectSetup Path.txt
+│   ├── ./Docs/AIDEV-ProjectSetup Project Structure.md
+│   ├── ./Docs/AIDEV-ProjectSetup: Session Continuity Document.md
+│   ├── ./Docs/API
+│   ├── ./Docs/gitignore-template.txt
+│   ├── ./Docs/license-template.txt
+│   ├── ./Docs/readme-template.txt
+│   └── ./Docs/requirements-txt.txt
+├── ./GUI
+│   └── ./GUI/DirectoryEditor.py.py
+├── ./KnowledgeDatabase
+│   └── ./KnowledgeDatabase/OldVersions
+├── ./KnowledgeDatabaseIndex
+│   ├── ./KnowledgeDatabaseIndex/00-00 INDEX-DocumentMaster.md
+│   ├── ./KnowledgeDatabaseIndex/00-10 GUIDE-DocumentMap.md
+│   ├── ./KnowledgeDatabaseIndex/00-20 STATUS-ProjectHimalaya.md
+│   ├── ./KnowledgeDatabaseIndex/00-40 LOG-Decisions.md
+│   ├── ./KnowledgeDatabaseIndex/00-60 GUIDE-ActiveSessions.md
+│   ├── ./KnowledgeDatabaseIndex/10-10 Project Himalaya: Strategic Roadmap & Evolution Plan.md
+│   ├── ./KnowledgeDatabaseIndex/10-20 Project Himalaya: Vision Document.md
+│   ├── ./KnowledgeDatabaseIndex/10-30 Project Himalaya: Comprehensive Scope Definition.md
+│   ├── ./KnowledgeDatabaseIndex/10-40 Project Himalaya: Comprehensive Scope Definition.md
+│   ├── ./KnowledgeDatabaseIndex/20-10 STANDARD-AIDEV-PascalCase Standards 1.6.md
+│   ├── ./KnowledgeDatabaseIndex/20-20 STANDARD-AUTHORSHIP.md
+│   ├── ./KnowledgeDatabaseIndex/20-30 STANDARD-FoundationDesignPrinciples.md
+│   ├── ./KnowledgeDatabaseIndex/20-40 SPEC-DocumentManager.md
+│   ├── ./KnowledgeDatabaseIndex/20-50 STANDARD-DatabaseSchema.md
+│   ├── ./KnowledgeDatabaseIndex/30-10 TEMPLATE-Component Plan.md
+│   ├── ./KnowledgeDatabaseIndex/30-20 SPEC-[ComponentName].md
+│   ├── ./KnowledgeDatabaseIndex/30-30 REF-[SubProjectName].md
+│   ├── ./KnowledgeDatabaseIndex/30-40 TEMPLATE-Project Himalaya: Session Continuity.md
+│   ├── ./KnowledgeDatabaseIndex/40-20 Project Knowledge Database Structure.md
+│   ├── ./KnowledgeDatabaseIndex/40-30 STANDARD-MetadataSchema.md
+│   ├── ./KnowledgeDatabaseIndex/50-10 IMPL-DocumentManager.md
+│   └── ./KnowledgeDatabaseIndex/60-50 TEMPLATE-TestCase.md
+├── ./license.txt
+├── ./Notes
+│   └── ./Notes/2024-03-21
+├── ./readme.md
+├── ./requirements.txt
+├── ./Scripts
+├── ./SysUtils
+│   ├── ./SysUtils/AIDEV-DocMManager_Setup.py
+│   ├── ./SysUtils/BuildDirectories.py
+│   ├── ./SysUtils/CodebaseSummary.sh
+│   ├── ./SysUtils/GitPushUpdates.sh
+│   ├── ./SysUtils/MyDiff.py
+│   └── ./SysUtils/PushGitHub.sh
+├── ./Tests
+│   ├── ./Tests/Integration
+│   └── ./Tests/Unit
+├── ./UI
+└── ./Utils
+    ├── ./Utils/ConfigManager.py
+    └── ./Utils/DirectoryParser.py
+
+19 directories, 44 files
+
+================================================================
+Files
+================================================================
+
+================
+File: Core/DatabaseIntegration.py
+================
+# File: DatabaseIntegration.py
+# Path: AIDEV-ProjectSetup/Core/DatabaseIntegration.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  1:20PM
+# Description: Database integration functionality
+
+"""
+Database integration functionality.
+
+This module provides functionality for interacting with the Himalaya database
+and setting up project-specific databases.
+"""
+
+import os
+import sqlite3
+from pathlib import Path
+from datetime import datetime
+import platform
+
+class DatabaseIntegration:
+    """Database integration functionality."""
+    
+    def __init__(self, ConfigManager):
+        """
+        Initialize DatabaseIntegration.
+        
+        Args:
+            ConfigManager: Configuration manager instance
+        """
+        self.Config = ConfigManager
+        self.HimalayaDbPath = self.Config.Get('DatabasePath')
+    
+    def InitializeProjectDatabase(self, DbPath, ProjectConfig):
+        """
+        Initialize project-specific database.
+        
+        Args:
+            DbPath: Path to project database
+            ProjectConfig: Project configuration
+            
+        Returns:
+            bool: True if initialization was successful
+        """
+        try:
+            # Connect to database (creates if not exists)
+            Connection = sqlite3.connect(DbPath)
+            Cursor = Connection.cursor()
+            
+            # Create core tables
+            self.CreateProjectConfigTable(Cursor)
+            self.CreateDocumentationTable(Cursor)
+            self.CreateHelpContentTable(Cursor)
+            self.CreateProjectStateTable(Cursor)
+            self.CreateSubProjectsTable(Cursor)
+            
+            # Insert initial data
+            self.InsertInitialData(Cursor, ProjectConfig)
+            
+            # Commit changes
+            Connection.commit()
+            Connection.close()
+            
+            return True
+            
+        except Exception as E:
+            print(f"Error initializing project database: {str(E)}")
+            return False
+    
+    def CreateProjectConfigTable(self, Cursor):
+        """
+        Create project configuration table.
+        
+        Args:
+            Cursor: Database cursor
+        """
+        Cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ProjectConfig (
+            ConfigId INTEGER PRIMARY KEY AUTOINCREMENT,
+            ConfigKey TEXT NOT NULL UNIQUE,
+            ConfigValue TEXT NOT NULL,
+            ConfigType TEXT NOT NULL,
+            Description TEXT,
+            LastModified TEXT NOT NULL
+        )
+        ''')
+    
+    def CreateDocumentationTable(self, Cursor):
+        """
+        Create documentation table.
+        
+        Args:
+            Cursor: Database cursor
+        """
+        Cursor.execute('''
+        CREATE TABLE IF NOT EXISTS Documentation (
+            DocId INTEGER PRIMARY KEY AUTOINCREMENT,
+            DocType TEXT NOT NULL,
+            Title TEXT NOT NULL,
+            Content TEXT NOT NULL,
+            Format TEXT NOT NULL,
+            Tags TEXT,
+            CreationDate TEXT NOT NULL,
+            LastModified TEXT NOT NULL
+        )
+        ''')
+    
+    def CreateHelpContentTable(self, Cursor):
+        """
+        Create help content table.
+        
+        Args:
+            Cursor: Database cursor
+        """
+        Cursor.execute('''
+        CREATE TABLE IF NOT EXISTS HelpContent (
+            HelpId INTEGER PRIMARY KEY AUTOINCREMENT,
+            Topic TEXT NOT NULL,
+            Content TEXT NOT NULL,
+            Keywords TEXT,
+            RelatedTopics TEXT,
+            ContextTriggers TEXT,
+            LastModified TEXT NOT NULL
+        )
+        ''')
+    
+    def CreateProjectStateTable(self, Cursor):
+        """
+        Create project state table.
+        
+        Args:
+            Cursor: Database cursor
+        """
+        Cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ProjectState (
+            StateId INTEGER PRIMARY KEY AUTOINCREMENT,
+            StateName TEXT NOT NULL,
+            CurrentPhase TEXT NOT NULL,
+            StateData TEXT NOT NULL,
+            CreationDate TEXT NOT NULL,
+            LastModified TEXT NOT NULL
+        )
+        ''')
+    
+    def CreateSubProjectsTable(self, Cursor):
+        """
+        Create sub-projects table.
+        
+        Args:
+            Cursor: Database cursor
+        """
+        Cursor.execute('''
+        CREATE TABLE IF NOT EXISTS SubProjects (
+            SubProjectId INTEGER PRIMARY KEY AUTOINCREMENT,
+            SubProjectName TEXT NOT NULL,
+            GitHubRepo TEXT,
+            Relationship TEXT NOT NULL,
+            Active INTEGER NOT NULL DEFAULT 1
+        )
+        ''')
+    
+    def InsertInitialData(self, Cursor, ProjectConfig):
+        """
+        Insert initial data into the database.
+        
+        Args:
+            Cursor: Database cursor
+            ProjectConfig: Project configuration
+        """
+        # Current timestamp
+        Now = datetime.now().isoformat()
+        
+        # Insert project configuration
+        Cursor.execute(
+            """
+            INSERT INTO ProjectConfig 
+            (ConfigKey, ConfigValue, ConfigType, Description, LastModified)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ('ProjectName', ProjectConfig.get('ProjectName', ''), 'STRING', 
+             'Project name', Now)
+        )
+        
+        Cursor.execute(
+            """
+            INSERT INTO ProjectConfig 
+            (ConfigKey, ConfigValue, ConfigType, Description, LastModified)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ('ProjectDescription', ProjectConfig.get('Description', ''), 'STRING', 
+             'Project description', Now)
+        )
+        
+        Cursor.execute(
+            """
+            INSERT INTO ProjectConfig 
+            (ConfigKey, ConfigValue, ConfigType, Description, LastModified)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ('GitHubRepo', f"{ProjectConfig.get('GitHubAccount', '')}/{ProjectConfig.get('RepositoryName', '')}", 
+             'STRING', 'GitHub repository', Now)
+        )
+        
+        # Insert initial project state
+        Cursor.execute(
+            """
+            INSERT INTO ProjectState 
+            (StateName, CurrentPhase, StateData, CreationDate, LastModified)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            ('Initial', 'Setup', '{}', Now, Now)
+        )
+        
+        # Insert initial documentation
+        Cursor.execute(
+            """
+            INSERT INTO Documentation 
+            (DocType, Title, Content, Format, Tags, CreationDate, LastModified)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            ('Setup', 'Project Setup Documentation', 
+             f"# {ProjectConfig.get('ProjectName', '')}\n\nProject setup completed on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}.", 
+             'Markdown', 'setup,documentation', Now, Now)
+        )
+    
+    def CreateDatabaseLink(self, ProjectPath, ProjectConfig):
+        """
+        Create symbolic link to Himalaya database.
+        
+        Args:
+            ProjectPath: Path to project directory
+            ProjectConfig: Project configuration
+            
+        Returns:
+            bool: True if link creation was successful
+        """
+        try:
+            # Target directory for link
+            DirectoriesPath = ProjectPath / 'Directories'
+            DirectoriesPath.mkdir(exist_ok=True)
+            
+            # Link path
+            LinkPath = DirectoriesPath / 'Himalaya.db'
+            
+            # Check if we're running on Windows
+            if platform.system() == 'Windows':
+                # Windows requires admin privileges for symlinks, use copy instead
+                import shutil
+                shutil.copy2(self.HimalayaDbPath, LinkPath)
+                print(f"Created copy of Himalaya database at {LinkPath}")
+            else:
+                # Create symbolic link
+                if LinkPath.exists():
+                    LinkPath.unlink()
+                os.symlink(self.HimalayaDbPath, LinkPath)
+                print(f"Created symbolic link to Himalaya database at {LinkPath}")
+            
+            return True
+            
+        except Exception as E:
+            print(f"Error creating database link: {str(E)}")
+            return False
+    
+    def RegisterProject(self, ProjectConfig):
+        """
+        Register project in Himalaya database.
+        
+        Args:
+            ProjectConfig: Project configuration
+            
+        Returns:
+            bool: True if registration was successful
+        """
+        try:
+            # Connect to Himalaya database
+            Connection = sqlite3.connect(self.HimalayaDbPath)
+            Cursor = Connection.cursor()
+            
+            # Check if projects table exists, create if not
+            Cursor.execute('''
+            CREATE TABLE IF NOT EXISTS project (
+                project_id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT NOT NULL,
+                path TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                version INTEGER NOT NULL DEFAULT 1,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                
+                UNIQUE(name)
+            )
+            ''')
+            
+            # Generate unique project ID
+            import uuid
+            ProjectId = f"project-{uuid.uuid4().hex[:8]}"
+            
+            # Current timestamp
+            Now = datetime.now().isoformat()
+            
+            # Insert project
+            Cursor.execute(
+                """
+                INSERT OR REPLACE INTO project 
+                (project_id, name, description, path, created_at, updated_at, version, is_active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    ProjectId, 
+                    ProjectConfig.get('ProjectName', ''),
+                    ProjectConfig.get('Description', ''),
+                    str(Path(ProjectConfig.get('ProjectPath', '')) / ProjectConfig.get('ProjectName', '')),
+                    Now,
+                    Now,
+                    1,
+                    1
+                )
+            )
+            
+            # Commit changes
+            Connection.commit()
+            Connection.close()
+            
+            return True
+            
+        except Exception as E:
+            print(f"Error registering project in Himalaya database: {str(E)}")
+            return False
+================
+File: Core/GitHubManager.py
+================
+# File: GitHubManager.py
+# Path: AIDEV-ProjectSetup/Core/GitHubManager.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  1:10PM
+# Description: GitHub repository management functionality
+
+"""
+GitHub repository management functionality.
+
+This module provides functionality for interacting with GitHub repositories,
+including validation, creation, and updating.
+"""
+
+import os
+import subprocess
+import requests
+from pathlib import Path
+
+class GitHubManager:
+    """GitHub repository management functionality."""
+    
+    def __init__(self, ConfigManager):
+        """
+        Initialize GitHubManager.
+        
+        Args:
+            ConfigManager: Configuration manager instance
+        """
+        self.Config = ConfigManager
+    
+    def ValidateRepository(self, Account, RepoName, Token=None):
+        """
+        Validate GitHub repository.
+        
+        Args:
+            Account: GitHub account name
+            RepoName: Repository name
+            Token: GitHub PAT (optional)
+            
+        Returns:
+            dict: Validation results with status and message
+        """
+        # Use token from config if not provided
+        if not Token:
+            Token = self.Config.GetGitHubToken()
+        
+        # Prepare headers
+        Headers = {}
+        if Token:
+            Headers['Authorization'] = f"token {Token}"
+        
+        # Check if repository exists
+        Url = f"https://api.github.com/repos/{Account}/{RepoName}"
+        try:
+            Response = requests.get(Url, headers=Headers)
+            
+            if Response.status_code == 404:
+                # Repository doesn't exist
+                return {
+                    'Status': 'NotFound',
+                    'Message': f"Repository {Account}/{RepoName} not found. You'll need to create it first."
+                }
+            
+            if Response.status_code != 200:
+                # Error checking repository
+                return {
+                    'Status': 'Error',
+                    'Message': f"Error checking repository: {Response.status_code} - {Response.text}"
+                }
+            
+            # Repository exists, check if it's empty
+            RepoData = Response.json()
+            if RepoData.get('size', 0) > 0:
+                # Repository is not empty
+                return {
+                    'Status': 'NotEmpty',
+                    'Message': f"Repository {Account}/{RepoName} is not empty. Please use an empty repository."
+                }
+            
+            # Repository exists and is empty
+            return {
+                'Status': 'Valid',
+                'Message': f"Repository {Account}/{RepoName} is valid and empty."
+            }
+            
+        except Exception as E:
+            return {
+                'Status': 'Error',
+                'Message': f"Error validating repository: {str(E)}"
+            }
+    
+    def PushToRemote(self, ProjectPath, Account, RepoName, Token):
+        """
+        Push to remote GitHub repository.
+        
+        Args:
+            ProjectPath: Path to project directory
+            Account: GitHub account name
+            RepoName: Repository name
+            Token: GitHub personal access token
+            
+        Returns:
+            bool: True if push was successful
+        """
+        try:
+            # Create URL with token for push
+            RemoteUrl = f"https://{Account}:{Token}@github.com/{Account}/{RepoName}.git"
+            
+            # Set remote URL with token
+            subprocess.run(
+                ['git', 'remote', 'set-url', 'origin', RemoteUrl],
+                cwd=ProjectPath,
+                check=True,
+                capture_output=True  # Hide output to avoid showing token
+            )
+            
+            # Push to remote
+            Result = subprocess.run(
+                ['git', 'push', '-u', 'origin', 'master'], 
+                cwd=ProjectPath,
+                check=True,
+                capture_output=True
+            )
+            
+            # Reset remote URL without token
+            PublicRemoteUrl = f"https://github.com/{Account}/{RepoName}.git"
+            subprocess.run(
+                ['git', 'remote', 'set-url', 'origin', PublicRemoteUrl],
+                cwd=ProjectPath,
+                check=True,
+                capture_output=True
+            )
+            
+            return True
+            
+        except subprocess.CalledProcessError as E:
+            print(f"Error pushing to remote: {E.stderr.decode('utf-8')}")
+            return False
+        except Exception as E:
+            print(f"Error pushing to remote: {str(E)}")
+            return False
+    
+    def CreateRepository(self, Account, RepoName, Description, Token):
+        """
+        Create new GitHub repository.
+        
+        Args:
+            Account: GitHub account name
+            RepoName: Repository name
+            Description: Repository description
+            Token: GitHub personal access token
+            
+        Returns:
+            dict: Creation results with status and message
+        """
+        # Prepare headers
+        Headers = {
+            'Authorization': f"token {Token}",
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        
+        # Prepare data
+        Data = {
+            'name': RepoName,
+            'description': Description,
+            'private': False,
+            'auto_init': False
+        }
+        
+        # Create repository
+        Url = f"https://api.github.com/user/repos"
+        try:
+            Response = requests.post(Url, headers=Headers, json=Data)
+            
+            if Response.status_code != 201:
+                return {
+                    'Status': 'Error',
+                    'Message': f"Error creating repository: {Response.status_code} - {Response.text}"
+                }
+            
+            return {
+                'Status': 'Created',
+                'Message': f"Repository {Account}/{RepoName} created successfully."
+            }
+            
+        except Exception as E:
+            return {
+                'Status': 'Error',
+                'Message': f"Error creating repository: {str(E)}"
+            }
+    
+    def CreateUpdateScript(self, ProjectPath):
+        """
+        Create update script for the project.
+        
+        Args:
+            ProjectPath: Path to project directory
+            
+        Returns:
+            Path: Path to created script
+        """
+        ScriptPath = ProjectPath / 'Scripts' / 'update-repo.sh'
+        
+        # Ensure Scripts directory exists
+        (ProjectPath / 'Scripts').mkdir(exist_ok=True)
+        
+        # Create script content
+        Content = """#!/bin/bash
+# update-repo.sh - Script for updating repository
+# Created by AIDEV-ProjectSetup
+
+# Get current date in MM/DD/YY format
+DATE=$(date +"%m/%d/%y %I:%M%p")
+
+# Default commit message
+DEFAULT_MESSAGE="Update $DATE"
+
+# Use provided message or default
+MESSAGE=${1:-$DEFAULT_MESSAGE}
+
+echo "Committing changes with message: $MESSAGE"
+
+# Add all files to staging
+git add .
+
+# Commit changes
+git commit -m "$MESSAGE"
+
+# Push to remote
+git push
+
+echo "Repository updated successfully."
+"""
+        
+        # Write script file
+        with open(ScriptPath, 'w') as File:
+            File.write(Content)
+        
+        # Make script executable
+        os.chmod(ScriptPath, 0o755)
+        
+        return ScriptPath
+
+================
+File: Core/ProjectInitializer.py
+================
+# File: ProjectInitializer.py
+# Path: AIDEV-ProjectSetup/Core/ProjectInitializer.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  1:00PM
+# Description: Core project initialization functionality
+
+"""
+Core project initialization functionality.
+
+This module provides the main functionality for initializing new projects,
+including directory structure creation, database setup, and GitHub integration.
+"""
+
+import os
+import subprocess
+import shutil
+import sqlite3
+from pathlib import Path
+from datetime import datetime
+from string import Template
+
+from Core.GitHubManager import GitHubManager
+from Core.DatabaseIntegration import DatabaseIntegration
+from Utils.DirectoryParser import DirectoryParser
+
+class ProjectInitializer:
+    """Project initialization functionality."""
+    
+    def __init__(self, ConfigManager):
+        """
+        Initialize ProjectInitializer.
+        
+        Args:
+            ConfigManager: Configuration manager instance
+        """
+        self.Config = ConfigManager
+        self.GitHubManager = GitHubManager(ConfigManager)
+        self.DatabaseIntegration = DatabaseIntegration(ConfigManager)
+        self.DirectoryParser = DirectoryParser()
+    
+    def InitializeProject(self, ProjectConfig):
+        """
+        Initialize a new project.
+        
+        Args:
+            ProjectConfig: Project configuration dictionary
+            
+        Returns:
+            bool: True if initialization was successful
+        """
+        try:
+            # Extract configuration
+            ProjectName = ProjectConfig.get('ProjectName')
+            ProjectPath = ProjectConfig.get('ProjectPath')
+            if not ProjectPath:
+                return False
+            
+            # Create full project path
+            FullProjectPath = Path(ProjectPath) / ProjectName
+            
+            # Check if project directory already exists
+            if FullProjectPath.exists():
+                print(f"Project directory already exists: {FullProjectPath}")
+                return False
+            
+            # Create project directory
+            FullProjectPath.mkdir(parents=True, exist_ok=True)
+            
+            # Create directory structure
+            self.CreateDirectoryStructure(FullProjectPath, ProjectConfig)
+            
+            # Setup project database
+            self.SetupDatabase(FullProjectPath, ProjectConfig)
+            
+            # Create initial files
+            self.CreateInitialFiles(FullProjectPath, ProjectConfig)
+            
+            # Initialize git repository
+            self.InitializeGit(FullProjectPath, ProjectConfig)
+            
+            # Register project in Himalaya database
+            self.RegisterProject(ProjectConfig)
+            
+            return True
+            
+        except Exception as E:
+            print(f"Error initializing project: {str(E)}")
+            return False
+    
+    def CreateDirectoryStructure(self, ProjectPath, ProjectConfig):
+        """
+        Create directory structure for project.
+        
+        Args:
+            ProjectPath: Full path to project directory
+            ProjectConfig: Project configuration
+        """
+        # Get directory structure from config
+        Structure = ProjectConfig.get('DirectoryStructure')
+        
+        if not Structure:
+            # Use default structure
+            Content = self.Config.Get('DefaultStructure')
+            Structure = self.DirectoryParser.ParseStructure(Content)
+        
+        # Create directories
+        self.CreateDirectories(ProjectPath, Structure)
+        
+        # Create special directories
+        DirectoriesPath = ProjectPath / 'Directories'
+        DirectoriesPath.mkdir(exist_ok=True)
+    
+    def CreateDirectories(self, BasePath, Structure, CurrentPath=None):
+        """
+        Recursively create directories from structure.
+        
+        Args:
+            BasePath: Base project path
+            Structure: Directory structure dictionary
+            CurrentPath: Current path for recursion
+        """
+        if CurrentPath is None:
+            CurrentPath = BasePath
+        
+        for Name, Children in Structure.items():
+            # Skip files
+            if '.' in Name and not Name.startswith('.'):
+                continue
+            
+            # Create directory
+            NewPath = CurrentPath / Name
+            NewPath.mkdir(exist_ok=True)
+            
+            # Process children
+            if Children:
+                self.CreateDirectories(BasePath, Children, NewPath)
+    
+    def SetupDatabase(self, ProjectPath, ProjectConfig):
+        """
+        Setup project database.
+        
+        Args:
+            ProjectPath: Full path to project directory
+            ProjectConfig: Project configuration
+        """
+        ProjectName = ProjectConfig.get('ProjectName')
+        
+        # Create project database
+        ProjectDbPath = ProjectPath / 'Directories' / f"{ProjectName}.db"
+        
+        # Initialize database
+        self.DatabaseIntegration.InitializeProjectDatabase(ProjectDbPath, ProjectConfig)
+        
+        # Create symbolic link to Himalaya database
+        self.DatabaseIntegration.CreateDatabaseLink(ProjectPath, ProjectConfig)
+    
+    def CreateInitialFiles(self, ProjectPath, ProjectConfig):
+        """
+        Create initial project files.
+        
+        Args:
+            ProjectPath: Full path to project directory
+            ProjectConfig: Project configuration
+        """
+        # Get template path
+        TemplatesPath = self.Config.Get('TemplatesPath')
+        
+        # Create README.md
+        self.CreateFileFromTemplate(
+            TemplatesPath / 'README.md.template',
+            ProjectPath / 'README.md',
+            ProjectConfig
+        )
+        
+        # Create LICENSE
+        self.CreateFileFromTemplate(
+            TemplatesPath / 'LICENSE.template',
+            ProjectPath / 'LICENSE',
+            ProjectConfig
+        )
+        
+        # Create .gitignore
+        self.CreateFileFromTemplate(
+            TemplatesPath / 'gitignore.template',
+            ProjectPath / '.gitignore',
+            ProjectConfig
+        )
+        
+        # Create initial requirements.txt
+        with open(ProjectPath / 'requirements.txt', 'w') as File:
+            File.write("# Project dependencies\n")
+            File.write("# Add your dependencies here\n")
+    
+    def CreateFileFromTemplate(self, TemplatePath, OutputPath, ProjectConfig):
+        """
+        Create file from template.
+        
+        Args:
+            TemplatePath: Path to template file
+            OutputPath: Path to output file
+            ProjectConfig: Project configuration
+        """
+        if not TemplatePath.exists():
+            print(f"Template file not found: {TemplatePath}")
+            return
+        
+        try:
+            # Read template
+            with open(TemplatePath, 'r') as File:
+                TemplateContent = File.read()
+            
+            # Prepare template variables
+            TemplateVars = {
+                'ProjectName': ProjectConfig.get('ProjectName', ''),
+                'Description': ProjectConfig.get('Description', ''),
+                'Author': 'Herbert J. Bowers',
+                'Date': datetime.now().strftime('%Y-%m-%d'),
+                'Year': datetime.now().strftime('%Y')
+            }
+            
+            # Apply template
+            Template_ = Template(TemplateContent)
+            Content = Template_.safe_substitute(TemplateVars)
+            
+            # Write output file
+            with open(OutputPath, 'w') as File:
+                File.write(Content)
+                
+        except Exception as E:
+            print(f"Error creating file from template: {str(E)}")
+    
+    def InitializeGit(self, ProjectPath, ProjectConfig):
+        """
+        Initialize Git repository.
+        
+        Args:
+            ProjectPath: Full path to project directory
+            ProjectConfig: Project configuration
+        """
+        try:
+            # Initialize repository
+            subprocess.run(['git', 'init'], cwd=ProjectPath, check=True)
+            
+            # Add all files
+            subprocess.run(['git', 'add', '.'], cwd=ProjectPath, check=True)
+            
+            # Initial commit
+            CommitMessage = f"Initial commit for {ProjectConfig.get('ProjectName')}"
+            subprocess.run(['git', 'commit', '-m', CommitMessage], cwd=ProjectPath, check=True)
+            
+            # Add remote if GitHub settings are provided
+            GitHubAccount = ProjectConfig.get('GitHubAccount')
+            RepoName = ProjectConfig.get('RepositoryName')
+            if GitHubAccount and RepoName:
+                RemoteUrl = f"https://github.com/{GitHubAccount}/{RepoName}.git"
+                subprocess.run(['git', 'remote', 'add', 'origin', RemoteUrl], cwd=ProjectPath, check=True)
+                
+                # Push to remote if GitHub PAT is provided
+                GitHubPAT = ProjectConfig.get('GitHubPAT') or self.Config.GetGitHubToken()
+                if GitHubPAT:
+                    self.GitHubManager.PushToRemote(ProjectPath, GitHubAccount, RepoName, GitHubPAT)
+        
+        except Exception as E:
+            print(f"Error initializing Git repository: {str(E)}")
+    
+    def RegisterProject(self, ProjectConfig):
+        """
+        Register project in Himalaya database.
+        
+        Args:
+            ProjectConfig: Project configuration
+        """
+        self.DatabaseIntegration.RegisterProject(ProjectConfig)
+
+================
+File: GUI/DirectoryEditor.py.py
+================
+# File: DirectoryEditor.py
+# Path: AIDEV-ProjectSetup/GUI/DirectoryEditor.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  12:35PM
+# Description: Directory structure editor for AIDEV-ProjectSetup
+
+"""
+Directory structure editor component.
+
+This module provides the interface for viewing and modifying
+the project directory structure.
+"""
+
+from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, 
+                             QTreeView, QToolBar, QAction, QPushButton,
+                             QFileDialog, QLabel, QMenu, QInputDialog,
+                             QMessageBox)
+from PySide6.QtCore import Qt, QStandardItemModel, QStandardItem
+from PySide6.QtGui import QIcon
+
+from Utils.DirectoryParser import DirectoryParser
+
+class DirectoryEditor(QWidget):
+    """Directory structure editor component."""
+    
+    def __init__(self, Initializer):
+        """Initialize the directory editor."""
+        super().__init__()
+        
+        self.Initializer = Initializer
+        self.DirectoryParser = DirectoryParser()
+        
+        self.SetupUI()
+        self.LoadDefaultStructure()
+    
+    def SetupUI(self):
+        """Set up the user interface components."""
+        # Create main layout
+        self.MainLayout = QVBoxLayout(self)
+        
+        # Create header label
+        self.HeaderLabel = QLabel("Project Directory Structure")
+        self.HeaderLabel.setAlignment(Qt.AlignCenter)
+        self.MainLayout.addWidget(self.HeaderLabel)
+        
+        # Create toolbar
+        self.ToolBar = QToolBar()
+        self.MainLayout.addWidget(self.ToolBar)
+        
+        # Add actions to toolbar
+        self.LoadDefaultAction = QAction("Load Default", self)
+        self.LoadFromFileAction = QAction("Load from File", self)
+        self.AddFolderAction = QAction("Add Folder", self)
+        self.RemoveFolderAction = QAction("Remove Folder", self)
+        
+        self.ToolBar.addAction(self.LoadDefaultAction)
+        self.ToolBar.addAction(self.LoadFromFileAction)
+        self.ToolBar.addAction(self.AddFolderAction)
+        self.ToolBar.addAction(self.RemoveFolderAction)
+        
+        # Connect actions
+        self.LoadDefaultAction.triggered.connect(self.LoadDefaultStructure)
+        self.LoadFromFileAction.triggered.connect(self.LoadFromFile)
+        self.AddFolderAction.triggered.connect(self.AddFolder)
+        self.RemoveFolderAction.triggered.connect(self.RemoveFolder)
+        
+        # Create tree view
+        self.DirectoryTree = QTreeView()
+        self.DirectoryModel = QStandardItemModel()
+        self.DirectoryModel.setHorizontalHeaderLabels(["Directory Structure"])
+        self.DirectoryTree.setModel(self.DirectoryModel)
+        self.DirectoryTree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.DirectoryTree.customContextMenuRequested.connect(self.ShowContextMenu)
+        
+        self.MainLayout.addWidget(self.DirectoryTree)
+        
+        # Add description label
+        self.DescriptionLabel = QLabel(
+            "Define the directory structure for your project. "
+            "You can use the default structure, load from a file, "
+            "or manually edit the structure."
+        )
+        self.DescriptionLabel.setWordWrap(True)
+        self.MainLayout.addWidget(self.DescriptionLabel)
+        
+        # Add error label
+        self.ErrorLabel = QLabel("")
+        self.ErrorLabel.setObjectName("error")
+        self.ErrorLabel.setAlignment(Qt.AlignCenter)
+        self.ErrorLabel.setVisible(False)
+        self.MainLayout.addWidget(self.ErrorLabel)
+    
+    def GetDefaultStructure(self):
+        """Get the default directory structure."""
+        return """
+.
+├── AddThese
+├── AddTheseNow
+├── Core
+├── Docs
+│   └── API
+├── GUI
+├── KnowledgeDatabase
+├── LICENSE
+├── Models
+├── Notes
+├── README.md
+├── requirements.txt
+├── Scripts
+├── SysUtils
+├── Tests
+└── Utils
+"""
+    
+    def LoadDefaultStructure(self):
+        """Load the default directory structure."""
+        # Clear existing model
+        self.DirectoryModel.clear()
+        self.DirectoryModel.setHorizontalHeaderLabels(["Directory Structure"])
+        
+        # Parse default structure
+        Structure = self.DirectoryParser.ParseStructure(self.GetDefaultStructure())
+        
+        # Build the tree
+        self.BuildDirectoryTree(Structure, self.DirectoryModel.invisibleRootItem())
+        
+        # Expand all items
+        self.DirectoryTree.expandAll()
+    
+    def LoadFromFile(self):
+        """Load directory structure from a text file."""
+        FilePath, _ = QFileDialog.getOpenFileName(
+            self, "Load Directory Structure", "", 
+            "Text Files (*.txt);;All Files (*)"
+        )
+        
+        if not FilePath:
+            return
+        
+        try:
+            with open(FilePath, 'r') as File:
+                Content = File.read()
+                
+            # Parse structure
+            Structure = self.DirectoryParser.ParseStructure(Content)
+            
+            # Clear existing model
+            self.DirectoryModel.clear()
+            self.DirectoryModel.setHorizontalHeaderLabels(["Directory Structure"])
+            
+            # Build the tree
+            self.BuildDirectoryTree(Structure, self.DirectoryModel.invisibleRootItem())
+            
+            # Expand all items
+            self.DirectoryTree.expandAll()
+            
+        except Exception as E:
+            self.ShowError(f"Failed to load structure: {str(E)}")
+    
+    def BuildDirectoryTree(self, Structure, ParentItem):
+        """Build tree structure from parsed directory structure."""
+        for Name, Children in Structure.items():
+            Item = QStandardItem(Name)
+            ParentItem.appendRow(Item)
+            
+            if Children:
+                self.BuildDirectoryTree(Children, Item)
+    
+    def AddFolder(self):
+        """Add a new folder to the structure."""
+        # Get selected item or use root if none selected
+        SelectedIndexes = self.DirectoryTree.selectedIndexes()
+        if SelectedIndexes:
+            ParentItem = self.DirectoryModel.itemFromIndex(SelectedIndexes[0])
+        else:
+            ParentItem = self.DirectoryModel.invisibleRootItem()
+        
+        # Get folder name
+        FolderName, Ok = QInputDialog.getText(
+            self, "Add Folder", "Folder Name:", QLineEdit.Normal, ""
+        )
+        
+        if Ok and FolderName:
+            # Check if folder already exists
+            for Row in range(ParentItem.rowCount()):
+                if ParentItem.child(Row).text() == FolderName:
+                    self.ShowError(f"Folder '{FolderName}' already exists.")
+                    return
+            
+            # Add new folder
+            NewItem = QStandardItem(FolderName)
+            ParentItem.appendRow(NewItem)
+            
+            # Expand parent item
+            if ParentItem != self.DirectoryModel.invisibleRootItem():
+                ParentIndex = ParentItem.index()
+                self.DirectoryTree.expand(ParentIndex)
+    
+    def RemoveFolder(self):
+        """Remove selected folder from the structure."""
+        SelectedIndexes = self.DirectoryTree.selectedIndexes()
+        if not SelectedIndexes:
+            self.ShowError("Please select a folder to remove.")
+            return
+        
+        # Get selected item
+        SelectedItem = self.DirectoryModel.itemFromIndex(SelectedIndexes[0])
+        
+        # Confirm deletion
+        Reply = QMessageBox.question(
+            self, "Remove Folder", 
+            f"Are you sure you want to remove '{SelectedItem.text()}'?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
+        
+        if Reply == QMessageBox.Yes:
+            # Remove item from model
+            ParentItem = SelectedItem.parent()
+            if ParentItem:
+                ParentItem.removeRow(SelectedItem.row())
+            else:
+                self.DirectoryModel.removeRow(SelectedItem.row())
+    
+    def ShowContextMenu(self, Position):
+        """Show context menu for tree view."""
+        ContextMenu = QMenu(self)
+        
+        AddAction = ContextMenu.addAction("Add Folder")
+        RemoveAction = ContextMenu.addAction("Remove Folder")
+        RenameAction = ContextMenu.addAction("Rename Folder")
+        
+        # Get selected item
+        SelectedIndexes = self.DirectoryTree.selectedIndexes()
+        if not SelectedIndexes:
+            RemoveAction.setEnabled(False)
+            RenameAction.setEnabled(False)
+        
+        # Show context menu
+        Action = ContextMenu.exec_(self.DirectoryTree.viewport().mapToGlobal(Position))
+        
+        if Action == AddAction:
+            self.AddFolder()
+        elif Action == RemoveAction:
+            self.RemoveFolder()
+        elif Action == RenameAction:
+            self.RenameFolder()
+    
+    def RenameFolder(self):
+        """Rename selected folder."""
+        SelectedIndexes = self.DirectoryTree.selectedIndexes()
+        if not SelectedIndexes:
+            return
+        
+        # Get selected item
+        SelectedItem = self.DirectoryModel.itemFromIndex(SelectedIndexes[0])
+        
+        # Get new name
+        NewName, Ok = QInputDialog.getText(
+            self, "Rename Folder", "New Name:", 
+            QLineEdit.Normal, SelectedItem.text()
+        )
+        
+        if Ok and NewName:
+            # Check if name already exists in parent
+            ParentItem = SelectedItem.parent()
+            if not ParentItem:
+                ParentItem = self.DirectoryModel.invisibleRootItem()
+                
+            for Row in range(ParentItem.rowCount()):
+                ChildItem = ParentItem.child(Row)
+                if ChildItem != SelectedItem and ChildItem.text() == NewName:
+                    self.ShowError(f"Folder '{NewName}' already exists.")
+                    return
+            
+            # Update name
+            SelectedItem.setText(NewName)
+    
+    def ShowError(self, Message):
+        """Display an error message."""
+        self.ErrorLabel.setText(Message)
+        self.ErrorLabel.setStyleSheet("color: red; font-weight: bold;")
+        self.ErrorLabel.setVisible(True)
+        
+        # Hide after 5 seconds
+        QTimer.singleShot(5000, lambda: self.ErrorLabel.setVisible(False))
+    
+    def ValidateStep(self):
+        """Validate the current step before proceeding."""
+        # Check if structure is not empty
+        if self.DirectoryModel.rowCount() == 0:
+            self.ShowError("Directory structure cannot be empty.")
+            return False
+        
+        return True
+    
+    def GetConfiguration(self):
+        """Get the directory structure configuration."""
+        # Extract structure from model
+        Structure = {}
+        self.ExtractStructure(self.DirectoryModel.invisibleRootItem(), Structure)
+        
+        return {
+            "DirectoryStructure": Structure
+        }
+    
+    def ExtractStructure(self, ParentItem, Structure):
+        """Recursively extract directory structure from model."""
+        for Row in range(ParentItem.rowCount()):
+            Item = ParentItem.child(Row)
+            ChildStructure = {}
+            Structure[Item.text()] = ChildStructure
+            self.ExtractStructure(Item, ChildStructure)
+
+================
+File: SysUtils/AIDEV-DocMManager_Setup.py
+================
+# File: setup.py
+# Path: setup.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: March 22, 2025
+# Last Modified: March 22, 2025  8:50 PM
+# Description: Installation script for DocumentRenamer
+
+"""
+Installation script for the DocumentRenamer package.
+
+This script configures package metadata and entry points for installation.
+"""
+
+from setuptools import setup, find_packages
+
+setup(
+    name="AIDEV-DocManager",
+    version="0.1.0",
+    description="Document management tool for Project Himalaya",
+    author="Herbert J. Bowers",
+    author_email="herb@bowersworld.com",
+    package_dir={"": "src"},
+    packages=find_packages(where="src"),
+    install_requires=[
+        # tkinter is part of standard Python library
+    ],
+    entry_points={
+        "console_scripts": [
+            "document-renamer=ProjectHimalaya.DocumentRenamer:Main",
+        ],
+    },
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+    python_requires=">=3.8",
+)
+
+================
+File: SysUtils/BuildDirectories.py
+================
+# BuildDirectories.py
+
+import os
+
+def create_directory(path):
+    try:
+        os.makedirs(path, exist_ok=True)
+        print(f"Created: {path}")
+    except Exception as e:
+        print(f"Failed to create {path}: {e}")
+
+def main():
+    base_dir = os.getcwd()
+
+    directories = [
+        "..Exclude",
+        "AddThese",
+        "AddTheseNow",
+        "Core",
+        "Docs/API",
+        "GUI",
+        "KnowledgeDatabase/OldVersions",
+        "Notes/2024-03-21",
+        "Scripts",
+        "SysUtils",
+        "Tests/Integration",
+        "Tests/Unit",
+        "UI",
+        "Utils"
+    ]
+
+    for directory in directories:
+        create_directory(os.path.join(base_dir, directory))
+
+    # Create empty placeholder files to represent the structure (optional)
+    print("\nDirectory structure created.")
+
+if __name__ == "__main__":
+    main()
+
+================
+File: SysUtils/MyDiff.py
+================
+# File: MyDiff.py
+# Path: SysUtils/MyDiff.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-20
+# Last Modified: 2025-03-20  10:30AM
+# Description: File diff generation tool with GUI interface
+
+import sys
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QTextEdit, QFileDialog, QLabel
+from PySide6.QtGui import QColor, QFont, QFontDatabase
+from PySide6.QtCore import Qt
+
+import difflib
+
+class DiffWindow(QWidget):
+    """
+    GUI window for comparing and displaying differences between two files.
+    
+    This class provides a graphical interface for selecting two files,
+    generating a diff between them, and visualizing the differences.
+    """
+    
+    def __init__(self):
+        """Initialize the diff window with UI components."""
+        super().__init__()
+        self.setWindowTitle("File Diff Generator")
+
+        self.File1Path = ""
+        self.File2Path = ""
+
+        # Widgets
+        self.File1Button = QPushButton("Select Original File")
+        self.File1Label = QLabel("Original File: Not selected")
+        self.File2Button = QPushButton("Select New File")
+        self.File2Label = QLabel("New File: Not selected")
+        self.GenerateButton = QPushButton("Generate Diff")
+        self.GenerateButton.setEnabled(False)  # Disable initially
+
+        self.OriginalText = QTextEdit()
+        self.OriginalText.setReadOnly(True)
+        self.NewText = QTextEdit()
+        self.NewText.setReadOnly(True)
+        self.DiffText = QTextEdit()
+        self.DiffText.setReadOnly(True)
+
+        self.OriginalHideButton = QPushButton("Hide Original")
+        self.NewHideButton = QPushButton("Hide New")
+        self.DiffHideButton = QPushButton("Hide Diff")
+
+        self.OriginalVisible = True
+        self.NewVisible = True
+        self.DiffVisible = True
+
+        # Layout
+        FileLayout = QHBoxLayout()
+        FileLayout.addWidget(self.File1Button)
+        FileLayout.addWidget(self.File1Label)
+        FileLayout.addWidget(self.File2Button)
+        FileLayout.addWidget(self.File2Label)
+
+        HideLayout = QHBoxLayout()
+        HideLayout.addWidget(self.OriginalHideButton)
+        HideLayout.addWidget(self.NewHideButton)
+        HideLayout.addWidget(self.DiffHideButton)
+
+        self.TextLabelLayout = QHBoxLayout()
+        self.TextLabelLayout.addWidget(QLabel("Original File"))
+        self.TextLabelLayout.addWidget(QLabel("New File"))
+        self.TextLabelLayout.addWidget(QLabel("Diff"))
+
+        self.DisplayLayout = QHBoxLayout()
+        self.DisplayLayout.addWidget(self.OriginalText)
+        self.DisplayLayout.addWidget(self.NewText)
+        self.DisplayLayout.addWidget(self.DiffText)
+
+        MainLayout = QVBoxLayout()
+        MainLayout.addLayout(FileLayout)
+        MainLayout.addWidget(self.GenerateButton)
+        MainLayout.addLayout(HideLayout)
+        MainLayout.addLayout(self.TextLabelLayout)
+        MainLayout.addLayout(self.DisplayLayout)
+
+        self.setLayout(MainLayout)
+
+        # Connections
+        self.File1Button.clicked.connect(self.SelectFile1)
+        self.File2Button.clicked.connect(self.SelectFile2)
+        self.GenerateButton.clicked.connect(self.GenerateDiff)
+
+        self.OriginalHideButton.clicked.connect(self.ToggleOriginal)
+        self.NewHideButton.clicked.connect(self.ToggleNew)
+        self.DiffHideButton.clicked.connect(self.ToggleDiff)
+
+    def SelectFile1(self):
+        """Open a file dialog to select the first (original) file."""
+        File1Path, _ = QFileDialog.getOpenFileName(self, "Select Original File")
+        if File1Path:
+            self.File1Path = File1Path
+            self.File1Label.setText("Original File: " + self.File1Path)
+            self.CheckEnableGenerate()
+
+    def SelectFile2(self):
+        """Open a file dialog to select the second (new) file."""
+        File2Path, _ = QFileDialog.getOpenFileName(self, "Select New File")
+        if File2Path:
+            self.File2Path = File2Path
+            self.File2Label.setText("New File: " + self.File2Path)
+            self.CheckEnableGenerate()
+
+    def CheckEnableGenerate(self):
+        """Enable the Generate button if both files have been selected."""
+        if self.File1Path and self.File2Path:
+            self.GenerateButton.setEnabled(True)
+        else:
+            self.GenerateButton.setEnabled(False)
+
+    def GenerateDiff(self):
+        """Generate and display the diff between the two selected files."""
+        try:
+            with open(self.File1Path, 'r') as F1:
+                File1Lines = F1.readlines()
+            with open(self.File2Path, 'r') as F2:
+                File2Lines = F2.readlines()
+
+            # Display original and new files with specified colors
+            self.OriginalText.setHtml(f"<pre><span style='color: green;'>{''.join(File1Lines)}</span></pre>")
+            self.NewText.setHtml(f"<pre><span style='color: red;'>{''.join(File2Lines)}</span></pre>")
+
+            Diff = difflib.Differ().compare(File1Lines, File2Lines)
+            DiffText = ""
+            for Line in Diff:
+                if Line.startswith('  '):
+                    DiffText += f"<span style='color: white;'>  {Line[2:]}</span>"  # Common lines
+                elif Line.startswith('- '):
+                    DiffText += f"<span style='color: red;'>1: {Line[2:]}</span>"  # File 1 lines
+                elif Line.startswith('+ '):
+                    DiffText += f"<span style='color: green;'>2: {Line[2:]}</span>"  # File 2 lines
+                elif Line.startswith('? '):
+                    DiffText += f"<span style='color: yellow;'>? {Line[2:]}</span>"  # Questionable lines
+                else:
+                    DiffText += f"<span style='color: darkgray;'>{Line}</span>"  # Other lines (e.g. ---, +++)
+
+            if not DiffText:
+                self.DiffText.setText("No differences found.")
+            else:
+                self.DiffText.setHtml(f"<pre>{DiffText}</pre>")
+
+        except FileNotFoundError:
+            self.OriginalText.setText("Error: One or both files not found.")
+            self.NewText.setText("Error: One or both files not found.")
+            self.DiffText.setText("Error: One or both files not found.")
+        except Exception as e:
+            self.DiffText.setText(f"Error: {str(e)}")
+
+    def ToggleOriginal(self):
+        """Toggle visibility of the original file pane."""
+        self.OriginalVisible = not self.OriginalVisible
+        self.OriginalText.setVisible(self.OriginalVisible)
+        self.UpdateLayout()
+
+    def ToggleNew(self):
+        """Toggle visibility of the new file pane."""
+        self.NewVisible = not self.NewVisible
+        self.NewText.setVisible(self.NewVisible)
+        self.UpdateLayout()
+
+    def ToggleDiff(self):
+        """Toggle visibility of the diff pane."""
+        self.DiffVisible = not self.DiffVisible
+        self.DiffText.setVisible(self.DiffVisible)
+        self.UpdateLayout()
+
+    def UpdateLayout(self):
+        """Update the layout to reflect current visibility settings."""
+        # Remove all widgets from the layout
+        for i in reversed(range(self.DisplayLayout.count())):
+            Widget = self.DisplayLayout.itemAt(i).widget()
+            if Widget is not None:
+                Widget.setParent(None)
+
+        # Add the visible widgets back to the layout
+        if self.OriginalVisible:
+            self.DisplayLayout.addWidget(self.OriginalText)
+        if self.NewVisible:
+            self.DisplayLayout.addWidget(self.NewText)
+        if self.DiffVisible:
+            self.DisplayLayout.addWidget(self.DiffText)
+
+def Main():
+    """Main entry point for the application."""
+    App = QApplication(sys.argv)
+    Window = DiffWindow()
+    Window.show()
+    sys.exit(App.exec())
+
+if __name__ == '__main__':
+    Main()
+
+================
+File: Utils/ConfigManager.py
+================
+# File: ConfigManager.py
+# Path: AIDEV-ProjectSetup/Utils/ConfigManager.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  12:50PM
+# Description: Configuration management utility
+
+"""
+Configuration management utility.
+
+This module provides functionality for managing application configuration,
+including loading from files and environment variables.
+"""
+
+import os
+import json
+import re
+from pathlib import Path
+from dotenv import load_dotenv
+
+class ConfigManager:
+    """Configuration management utility."""
+    
+    def __init__(self, ConfigFile=None):
+        """
+        Initialize configuration manager.
+        
+        Args:
+            ConfigFile: Optional path to configuration file
+        """
+        # Default configuration
+        self.Config = {
+            "DefaultGitHubAccount": "CallMeChewy",
+            "DefaultStructure": self.GetDefaultStructure(),
+            "DatabasePath": self.GetUserConfigDir() / "Himalaya.db",
+            "TemplatesPath": Path(__file__).parent.parent / "Resources" / "Templates"
+        }
+        
+        # Load environment variables
+        load_dotenv()
+        
+        # Load configuration file if provided
+        if ConfigFile and os.path.exists(ConfigFile):
+            self.LoadFromFile(ConfigFile)
+        
+        # Override with environment variables
+        self.LoadFromEnvironment()
+    
+    def GetUserConfigDir(self):
+        """
+        Get user configuration directory.
+        
+        Returns:
+            Path: Path to user configuration directory
+        """
+        # Use platform-specific user config directory
+        if os.name == 'nt':  # Windows
+            ConfigDir = Path(os.environ.get('APPDATA')) / "ProjectHimalaya"
+        else:  # Linux/Mac
+            ConfigDir = Path.home() / ".config" / "ProjectHimalaya"
+        
+        # Create directory if it doesn't exist
+        ConfigDir.mkdir(parents=True, exist_ok=True)
+        
+        return ConfigDir
+    
+    def GetDefaultStructure(self):
+        """
+        Get default directory structure.
+        
+        Returns:
+            str: Default directory structure
+        """
+        return """
+.
+├── AddThese
+├── AddTheseNow
+├── Core
+├── Docs
+│   └── API
+├── GUI
+├── KnowledgeDatabase
+├── LICENSE
+├── Models
+├── Notes
+├── README.md
+├── requirements.txt
+├── Scripts
+├── SysUtils
+├── Tests
+└── Utils
+"""
+    
+    def LoadFromFile(self, FilePath):
+        """
+        Load configuration from JSON file.
+        
+        Args:
+            FilePath: Path to configuration file
+        """
+        try:
+            with open(FilePath, 'r') as File:
+                FileConfig = json.load(File)
+                self.Config.update(FileConfig)
+        except Exception as E:
+            print(f"Error loading configuration file: {str(E)}")
+    
+    def LoadFromEnvironment(self):
+        """Load configuration from environment variables."""
+        # Pattern for environment variables: AIDEV_PROJECT_SETUP_*
+        EnvPattern = re.compile(r'^AIDEV_PROJECT_SETUP_(.+)$')
+        
+        for Key, Value in os.environ.items():
+            Match = EnvPattern.match(Key)
+            if Match:
+                # Convert to camel case
+                ConfigKey = Match.group(1).lower()
+                ConfigKey = ''.join(
+                    word.capitalize() if i > 0 else word.lower()
+                    for i, word in enumerate(ConfigKey.split('_'))
+                )
+                
+                # Update configuration
+                self.Config[ConfigKey] = Value
+    
+    def Get(self, Key, Default=None):
+        """
+        Get configuration value.
+        
+        Args:
+            Key: Configuration key
+            Default: Default value if key doesn't exist
+            
+        Returns:
+            Configuration value or default if not found
+        """
+        return self.Config.get(Key, Default)
+    
+    def Set(self, Key, Value):
+        """
+        Set configuration value.
+        
+        Args:
+            Key: Configuration key
+            Value: Configuration value
+        """
+        self.Config[Key] = Value
+    
+    def GetGitHubToken(self):
+        """
+        Get GitHub personal access token.
+        
+        Returns:
+            str: GitHub PAT from environment or None
+        """
+        return os.environ.get('GITHUB_PAT')
+    
+    def SaveToFile(self, FilePath):
+        """
+        Save configuration to JSON file.
+        
+        Args:
+            FilePath: Path to configuration file
+        """
+        try:
+            with open(FilePath, 'w') as File:
+                json.dump(self.Config, File, indent=2)
+        except Exception as E:
+            print(f"Error saving configuration file: {str(E)}")
+
+================
+File: Utils/DirectoryParser.py
+================
+# File: DirectoryParser.py
+# Path: AIDEV-ProjectSetup/Utils/DirectoryParser.py
+# Standard: AIDEV-PascalCase-1.6
+# Created: 2025-03-23
+# Last Modified: 2025-03-23  12:45PM
+# Description: Parser for directory structure text files
+
+"""
+Directory structure parser utility.
+
+This module provides functionality for parsing directory structure
+from text files or string input in tree-like format.
+"""
+
+import re
+
+class DirectoryParser:
+    """Parser for directory structure text files."""
+    
+    def __init__(self):
+        """Initialize DirectoryParser."""
+        # Patterns for line parsing
+        self.IndentPattern = re.compile(r'^(\s*)(├── |└── |│   |\s\s\s)(.+)$')
+        self.DirectPattern = re.compile(r'^(\s*)(.+)$')
+    
+    def ParseStructure(self, Content):
+        """
+        Parse directory structure from string content.
+        
+        Args:
+            Content: String containing directory structure in tree format
+            
+        Returns:
+            Dict: Hierarchical representation of directory structure
+        """
+        Lines = Content.strip().split('\n')
+        Structure = {}
+        
+        # Skip empty lines and the root '.' line
+        ProcessedLines = []
+        for Line in Lines:
+            Line = Line.rstrip()
+            if Line and not Line.strip() == '.':
+                ProcessedLines.append(Line)
+        
+        if not ProcessedLines:
+            return Structure
+        
+        # Process lines
+        LineStack = []
+        IndentStack = [-1]
+        CurrentDict = Structure
+        DictStack = [Structure]
+        
+        for Line in ProcessedLines:
+            # Try to match standard tree format
+            Match = self.IndentPattern.match(Line)
+            if not Match:
+                # Try direct format (just indentation)
+                Match = self.DirectPattern.match(Line)
+                if not Match:
+                    continue
+                
+                Indent, Name = len(Match.group(1)), Match.group(2).strip()
+            else:
+                Indent = len(Match.group(1))
+                Name = Match.group(3).strip()
+            
+            # Skip files (containing periods, except directories starting with '.')
+            if '.' in Name and not Name.startswith('.') and not Name == '..':
+                # Special files like README.md and LICENSE
+                if Name in ['README.md', 'LICENSE', 'requirements.txt', '.gitignore']:
+                    # Handle special files
+                    CurrentDict[Name] = {}
+                continue
+            
+            # Process indentation
+            while Indent <= IndentStack[-1]:
+                IndentStack.pop()
+                DictStack.pop()
+                
+            # Get current dictionary
+            CurrentDict = DictStack[-1]
+            
+            # Add new directory
+            CurrentDict[Name] = {}
+            
+            # Update stacks
+            IndentStack.append(Indent)
+            DictStack.append(CurrentDict[Name])
+        
+        return Structure
+    
+    def FormatStructureToText(self, Structure, Prefix=""):
+        """
+        Format directory structure to text representation.
+        
+        Args:
+            Structure: Dictionary representing directory structure
+            Prefix: Prefix for indentation (used in recursion)
+            
+        Returns:
+            str: Text representation of structure
+        """
+        Result = []
+        
+        # Get sorted keys
+        Keys = sorted(Structure.keys())
+        
+        for i, Name in enumerate(Keys):
+            IsLast = (i == len(Keys) - 1)
+            
+            # Determine prefix and connector
+            if IsLast:
+                Connector = "└── "
+                ChildPrefix = Prefix + "    "
+            else:
+                Connector = "├── "
+                ChildPrefix = Prefix + "│   "
+            
+            # Add line for current directory
+            Line = Prefix + Connector + Name
+            Result.append(Line)
+            
+            # Process children recursively
+            if Structure[Name]:
+                ChildLines = self.FormatStructureToText(
+                    Structure[Name], ChildPrefix
+                )
+                Result.extend(ChildLines)
+        
+        return Result
+
+================
+File: cs/AIDEV-ProjectSetup Project Structure.md
+================
+# AIDEV-ProjectSetup Project Structure
+
+## Core Components
+
+### Main Application
+
+- **Main.py**: Application entry point
+- **requirements.txt**: Project dependencies
+
+### GUI Components
+
+- **GUI/MainWindow.py**: Main application window
+- **GUI/AppStyles.py**: Application styling definitions
+- **GUI/ProjectConfigPanel.py**: Project configuration panel
+- **GUI/DirectoryEditor.py**: Directory structure editor
+
+### Core Functionality
+
+- **Core/ProjectInitializer.py**: Core project initialization functionality
+- **Core/GitHubManager.py**: GitHub repository management
+- **Core/DatabaseIntegration.py**: Database setup and integration
+
+### Utilities
+
+- **Utils/ConfigManager.py**: Configuration management
+- **Utils/DirectoryParser.py**: Directory structure parsing
+
+### Resources
+
+- **Resources/Templates/README.md.template**: Template for README.md
+- **Resources/Templates/LICENSE.template**: Template for LICENSE
+- **Resources/Templates/gitignore.template**: Template for .gitignore
+
+## Implementation Status
+
+| Component | Status | Description |
+|-----------|--------|-------------|
+| Main.py | Complete | Application entry point |
+| GUI/MainWindow.py | Complete | Main application window |
+| GUI/AppStyles.py | Complete | Application styling |
+| GUI/ProjectConfigPanel.py | Complete | Project configuration panel |
+| GUI/DirectoryEditor.py | Complete | Directory structure editor |
+| Core/ProjectInitializer.py | Complete | Core initialization functionality |
+| Core/GitHubManager.py | Complete | GitHub repository management |
+| Core/DatabaseIntegration.py | Complete | Database integration |
+| Utils/ConfigManager.py | Complete | Configuration management |
+| Utils/DirectoryParser.py | Complete | Directory structure parsing |
+| Templates | Complete | Project templates |
+
+## Next Steps
+
+1. **Testing**: Create comprehensive tests for all components
+2. **Error Handling**: Enhance error handling and user feedback
+3. **Logging**: Add detailed logging throughout the application
+4. **Documentation**: Create in-app help and documentation
+5. **UI Polishing**: Refine the user interface and experience
+
+## Dependency Graph
+
+```
+Main.py
+  ├── GUI/MainWindow.py
+  │     ├── GUI/AppStyles.py
+  │     ├── GUI/ProjectConfigPanel.py
+  │     └── GUI/DirectoryEditor.py
+  ├── Core/ProjectInitializer.py
+  │     ├── Core/GitHubManager.py
+  │     └── Core/DatabaseIntegration.py
+  └── Utils/ConfigManager.py
+        └── Utils/DirectoryParser.py
+```
+
+## Folder Structure
+
+```
+AIDEV-ProjectSetup/
+├── Core/
+│   ├── DatabaseIntegration.py
+│   ├── GitHubManager.py
+│   └── ProjectInitializer.py
+├── GUI/
+│   ├── AppStyles.py
+│   ├── DirectoryEditor.py
+│   ├── MainWindow.py
+│   └── ProjectConfigPanel.py
+├── Utils/
+│   ├── ConfigManager.py
+│   └── DirectoryParser.py
+├── Resources/
+│   ├── Icons/
+│   │   └── ProjectSetupIcon.png
+│   └── Templates/
+│       ├── README.md.template
+│       ├── LICENSE.template
+│       └── gitignore.template
+├── Tests/
+│   ├── UnitTests/
+│   └── IntegrationTests/
+├── Directories/
+├── Main.py
+└── requirements.txt
+```
+
+## Running the Application
+
+To run the application:
+
+1. Make sure you have all the dependencies installed:
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. Run the main script:
+   ```
+   python Main.py
+   ```
+
+This will launch the AIDEV-ProjectSetup application with a full GUI interface for creating new projects.
+
+================
+File: cs/AIDEV-ProjectSetup: Session Continuity Document.md
+================
+# AIDEV-ProjectSetup: Session Continuity Document
+**Created: March 23, 2025 2:30 PM**
+**Last Modified: March 23, 2025  2:30 PM**
+
+[Context: Development_Session]
+[Component: Layer3_ProjectSetup]
+[Status: In_Progress]
+[Version: 0.1]
+
+## Session Summary
+
+In this session, we designed and implemented the core components of the AIDEV-ProjectSetup application, a tool for creating new projects that conform to the Project Himalaya ecosystem standards. We defined the project's architecture, developed its user interface, and implemented the core functionality for project initialization, GitHub integration, and database setup.
+
+## Key Accomplishments
+
+1. Created comprehensive implementation plan for the AIDEV-ProjectSetup tool
+2. Designed and implemented the main application structure
+3. Developed the GUI components with PySide6
+4. Implemented core functionality for:
+   - Directory structure creation and management
+   - GitHub repository validation and integration
+   - Database setup (both Himalaya.db and project-specific databases)
+   - Project template generation
+5. Created templates for project files (README.md, LICENSE, .gitignore)
+6. Implemented database schema creation for both central and project databases
+7. Defined core styling with the silver/blue/gold/red color scheme
+
+## Current Implementation State
+
+All core components have been implemented and are ready for initial testing:
+
+- **Application Flow**: Complete setup wizard from project configuration to creation
+- **GUI Components**: All panels and editors are implemented
+- **Core Logic**: Project initialization, GitHub integration, and database setup
+- **Templates**: README.md, LICENSE, .gitignore templates created
+- **Database Integration**: Automatic creation of both databases if they don't exist
+
+The implementation follows the AIDEV-PascalCase standards and adheres to the modular design principles of Project Himalaya.
+
+## Next Steps
+
+### 1. Testing Phase
+
+1. **Manual Testing**:
+   - Test the application by creating several test projects
+   - Verify GitHub integration with test repositories
+   - Validate database creation and structure
+   - Test special case handling (e.g., directories with '..' prefix)
+
+2. **Bug Fixing**:
+   - Address any issues discovered during testing
+   - Refine error handling and user feedback
+   - Enhance edge case handling
+
+3. **Automated Testing**:
+   - Create unit tests for core components
+   - Implement integration tests for workflow validation
+   - Setup CI/CD pipeline for ongoing testing
+
+### 2. Enhancement Phase
+
+1. **UI Enhancements**:
+   - Implement progress visualization during project creation
+   - Add animations and transitions for better user experience
+   - Enhance visual feedback for validation results
+   - Improve form layouts and responsiveness
+
+2. **Feature Additions**:
+   - Recent projects tracking
+   - Multiple project templates
+   - Template customization options
+   - Database browser/viewer integration
+
+3. **Documentation**:
+   - In-app help system
+   - User guide
+   - Developer documentation
+   - API reference
+
+### 3. Refinement Phase
+
+1. **Performance Optimization**:
+   - Profile and optimize critical operations
+   - Reduce startup time
+   - Minimize memory usage
+
+2. **User Experience Improvements**:
+   - Conduct user testing
+   - Refine workflows based on feedback
+   - Add keyboard shortcuts
+   - Improve accessibility
+
+3. **Integration Enhancements**:
+   - Tighter integration with other Project Himalaya tools
+   - Enhanced database schema synchronization
+   - More sophisticated GitHub integration
+
+## Required Resources
+
+1. **Testing Environment**:
+   - Multiple test GitHub accounts/repositories
+   - Various test project configurations
+   - Different operating systems for cross-platform testing
+
+2. **Development Resources**:
+   - Additional icons and visual assets
+   - More comprehensive template library
+   - Database schema documentation
+
+3. **Feedback Channels**:
+   - Developer testing group
+   - User experience evaluation
+   - Integration testing with other Project Himalaya components
+
+## Notes and Considerations
+
+- The application currently creates both databases automatically if they don't exist, which simplifies initial testing (databases can be manually deleted between tests)
+- The GitHub integration uses personal access tokens which will need to be properly secured in production
+- The application follows a wizard-style flow which provides a clear, step-by-step experience
+- Database schema is flexible to accommodate future expansion
+
+---
+
+*"Project Himalaya redefines software development by elevating AI to the role of primary implementer while positioning humans as strategic architects. Through rigorous standards, comprehensive testing, and database-driven accountability, we establish a new paradigm where quality, transparency, and continuity are inherent to the process rather than aspirational goals."*
+
+— Herbert J. Bowers
+
+
+================================================================
+List of Program Files
+================================================================
+
+Program files included:
+./Core/DatabaseIntegration.py
+./Core/GitHubManager.py
+./Core/ProjectInitializer.py
+./GUI/DirectoryEditor.py.py
+./SysUtils/AIDEV-DocMManager_Setup.py
+./SysUtils/BuildDirectories.py
+./SysUtils/MyDiff.py
+./Utils/ConfigManager.py
+./Utils/DirectoryParser.py
+Docs/AIDEV-ProjectSetup Project Structure.md
+Docs/AIDEV-ProjectSetup: Session Continuity Document.md
+
+There are 11 program files included in the Files section of the CodebaseSummary document.
+
+================================================================
+List of Documents
+================================================================
+
+Documents included:
+Docs/AIDEV-ProjectSetup Project Structure.md
+Docs/AIDEV-ProjectSetup: Session Continuity Document.md

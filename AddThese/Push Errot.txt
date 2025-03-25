@@ -1,0 +1,36 @@
+herb@herb:~/Desktop/AIDEV-ProjectSetup$ /bin/python3 /home/herb/Desktop/AIDEV-ProjectSetup/run_initializer.py
+Looking for .env file at: /home/herb/Desktop/AIDEV-ProjectSetup/.env
+Loaded .env file
+GitHub PAT found in environment variables
+Initialized Himalaya database at /home/herb/.config/ProjectHimalaya/Himalaya.db
+Enter project name (default: AIDEV-MyNewProject): AIDEV-ProjectSetup
+Enter project path (default: /home/herb/Projects):
+Enter GitHub username (default: Your-GitHub-Username): CallMeChewy
+
+Project Configuration:
+  Project Name: AIDEV-ProjectSetup
+  Description: A new project created with AIDEV-ProjectSetup
+  Project Path: /home/herb/Projects
+  GitHub Account: CallMeChewy
+  Repository Name: AIDEV-ProjectSetup
+
+Proceed with these settings? (y/n): y
+
+Starting project initialization...
+Created symbolic link to Himalaya database at /home/herb/Projects/AIDEV-ProjectSetup/Directories/Himalaya.db
+Error creating file from template: [Errno 21] Is a directory: '/home/herb/Projects/AIDEV-ProjectSetup/LICENSE'
+Initialized empty Git repository in /home/herb/Projects/AIDEV-ProjectSetup/.git/
+[main (root-commit) e5a02e2] Initial commit for AIDEV-ProjectSetup
+ 3 files changed, 118 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 README.md
+ create mode 100644 requirements.txt
+Using default branch: main
+Pushing to remote using branch: main
+Error pushing to remote: remote: Permission to CallMeChewy/AIDEV-ProjectSetup.git denied to CallMeChewy.
+fatal: unable to access 'https://github.com/CallMeChewy/AIDEV-ProjectSetup.git/': The requested URL returned error: 403
+
+
+Project initialization successful!
+Project created at: /home/herb/Projects/AIDEV-ProjectSetup
+herb@herb:~/Desktop/AIDEV-ProjectSetup$
